@@ -1,0 +1,882 @@
+.daily-randomizer {
+  padding: 1.5rem;
+  background: var(--background);
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== SECTION 1: Page Header ===== */
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--primary), #7b68ee);
+  border-radius: var(--radius-lg);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.page-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.5px;
+}
+
+.page-header p {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  margin: 0;
+}
+
+/* ===== SECTION CONTAINER ===== */
+.page-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.section.card h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  color: var(--text);
+}
+
+/* ===== SECTION 2: Preset Tasks Toolbar ===== */
+.preset-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.section-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text);
+  text-align: right;
+}
+
+.preset-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.preset-chip {
+  flex-shrink: 0;
+  padding: 0.6rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.preset-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background: var(--primary);
+  opacity: 0.9;
+}
+
+.preset-chip:active {
+  transform: translateY(0);
+}
+
+/* ===== SECTION 3: Task Builder Card ===== */
+.task-builder-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.task-input-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 80px;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.task-name-input,
+.task-duration-input {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--background);
+  color: var(--text);
+  transition: var(--transition);
+}
+
+.task-name-input {
+  text-align: right;
+}
+
+.task-duration-input {
+  text-align: center;
+}
+
+.task-name-input:focus,
+.task-duration-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.btn-add-task {
+  padding: 0.75rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.btn-add-task:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-add-task:active {
+  transform: translateY(0);
+}
+
+/* Tasks List */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.task-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.task-item:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.task-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.task-info {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-edit-task,
+.btn-delete-task {
+  padding: 0.4rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.btn-edit-task:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.btn-delete-task:hover {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+/* Task Edit Row */
+.task-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 80px auto auto;
+  gap: 0.6rem;
+  width: 100%;
+  align-items: center;
+}
+
+.task-edit-input {
+  padding: 0.6rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: white;
+  color: var(--text);
+}
+
+.task-edit-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.btn-confirm,
+.btn-cancel {
+  padding: 0.6rem 0.8rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.btn-confirm {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-confirm:hover {
+  opacity: 0.9;
+}
+
+.btn-cancel {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-cancel:hover {
+  opacity: 0.9;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+
+/* ===== SECTION 4: Schedule Controls Card ===== */
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.control-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.control-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.time-input,
+.dayname-input {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--background);
+  color: var(--text);
+  text-align: right;
+  transition: var(--transition);
+}
+
+.time-input:focus,
+.dayname-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.btn-randomize {
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary), #7b68ee);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-randomize:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-randomize:active {
+  transform: translateY(0);
+}
+
+/* ===== SECTION 5: Generated Timeline Card ===== */
+.timeline-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  user-select: none;
+}
+
+.timeline-task {
+  background: var(--primary);
+  color: white;
+  border: 2px solid var(--primary);
+  cursor: grab;
+}
+
+.timeline-task:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.timeline-task:active {
+  cursor: grabbing;
+}
+
+.timeline-break {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.drag-handle {
+  font-weight: bold;
+  opacity: 0.7;
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.timeline-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: right;
+}
+
+.timeline-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.timeline-time {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+/* Break Edit Inline */
+.break-edit-inline {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.break-edit-inline input {
+  width: 60px;
+  padding: 0.5rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.break-edit-inline input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.break-edit-inline span {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-edit-break {
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.btn-edit-break:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Actions Row */
+.actions-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-save {
+  padding: 0.75rem 1.5rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-save:hover {
+  opacity: 0.9;
+}
+
+.btn-cancel-edit {
+  padding: 0.75rem 1.25rem;
+  background: #ff9800;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-cancel-edit:hover {
+  opacity: 0.9;
+}
+
+.login-hint {
+  color: var(--text-2);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Google Calendar Section */
+.gcal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--background);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.btn-gcal-connect {
+  padding: 0.85rem 1.25rem;
+  background: #ea4335;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-gcal-connect:hover {
+  opacity: 0.9;
+}
+
+.btn-gcal-push {
+  padding: 0.85rem 1.25rem;
+  background: #34a853;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-gcal-push:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-gcal-push:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gcal-connected {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #34a853;
+  text-align: right;
+}
+
+.gcal-error {
+  font-size: 0.85rem;
+  color: #d32f2f;
+  padding: 0.75rem;
+  background: rgba(211, 47, 47, 0.1);
+  border-radius: var(--radius-sm);
+  text-align: right;
+  border-right: 3px solid #d32f2f;
+}
+
+.gcal-error p {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #c62828;
+}
+
+/* ===== SECTION 6: Saved Schedules Card ===== */
+.saved-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.saved-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--background);
+}
+
+.saved-header-clickable {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  cursor: pointer;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.saved-header-clickable:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.saved-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  text-align: right;
+}
+
+.saved-day-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+  margin-right: auto;
+}
+
+.saved-date {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.saved-meta {
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.expand-icon {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  margin-right: 1rem;
+  transition: var(--transition);
+}
+
+.saved-expanded {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.saved-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.saved-timeline .timeline-item {
+  padding: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.saved-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-edit-saved,
+.btn-gcal-saved,
+.btn-delete-saved {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.btn-edit-saved {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-edit-saved:hover {
+  opacity: 0.9;
+}
+
+.btn-gcal-saved {
+  background: #34a853;
+  color: white;
+}
+
+.btn-gcal-saved:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-gcal-saved:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-delete-saved {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-delete-saved:hover {
+  opacity: 0.9;
+}
+
+.gcal-help-text {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  margin-top: 0.75rem;
+  text-align: right;
+  padding: 0.75rem;
+  background: rgba(52, 168, 83, 0.08);
+  border-radius: var(--radius-sm);
+  border-right: 3px solid #34a853;
+}
+
+/* ===== TOAST NOTIFICATION ===== */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border: 2px solid #4caf50;
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.3s ease-out;
+  z-index: 1000;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .daily-randomizer {
+    padding: 1rem;
+  }
+
+  .page-header {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+  }
+
+  .page-header p {
+    font-size: 1rem;
+  }
+
+  .page-sections {
+    gap: 1.5rem;
+  }
+
+  .section.card {
+    padding: 1.25rem;
+  }
+
+  .task-input-row {
+    grid-template-columns: 1fr 80px;
+    gap: 0.5rem;
+  }
+
+  .btn-add-task {
+    grid-column: 1 / -1;
+  }
+
+  .actions-row {
+    flex-direction: column;
+  }
+
+  .btn-save,
+  .btn-cancel-edit {
+    width: 100%;
+  }
+
+  .btn-gcal-connect,
+  .btn-gcal-push {
+    width: 100%;
+  }
+
+  .saved-actions {
+    flex-direction: column;
+  }
+
+  .btn-edit-saved,
+  .btn-gcal-saved,
+  .btn-delete-saved {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .toast {
+    right: 1rem;
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  .preset-scroll {
+    gap: 0.5rem;
+  }
+
+  .preset-chip {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .page-header p {
+    font-size: 0.9rem;
+  }
+
+  .task-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-add-task {
+    grid-column: 1;
+  }
+
+  .timeline-item {
+    flex-wrap: wrap;
+  }
+
+  .break-edit-inline {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .break-edit-inline input {
+    width: 100%;
+  }
+}

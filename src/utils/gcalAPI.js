@@ -114,23 +114,30 @@ export async function pushScheduleToGCal(schedule, accessToken, dateStr = null) 
     
     if (!res.ok) {
       const errorBody = await res.json();
-      console.error(`Event ${i + 1} error:`, errorBody);
+      console.error(`\n❌ Event ${i + 1} failed with status ${res.status}`);
+      console.error('Google API Error Response:', JSON.stringify(errorBody, null, 2));
+      console.error('Full error:', errorBody.error);
 
       // Handle specific error codes
       if (res.status === 401) {
+        console.error('⚠️ Token expired or invalid');
         throw new Error('TOKEN_EXPIRED');
       }
       
       if (res.status === 403) {
+        console.error('⚠️ Insufficient permissions - token may not have calendar.events scope');
+        console.error('Error details:', errorBody.error?.message);
         throw new Error('INSUFFICIENT_PERMISSIONS');
       }
 
       // Generic API error
       const errorMsg = errorBody.error?.message || 'Unknown error';
+      console.error(`Generic API error: ${errorMsg}`);
       throw new Error(`API_ERROR: ${errorMsg}`);
     }
   }
 
+  console.log('✅ All events created successfully!');
   return true;
 }
 

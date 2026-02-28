@@ -11,10 +11,11 @@ import {
     setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, getAuth, signOut } from "firebase/auth";
 import { pushScheduleToGCal } from "@/utils/gcalAPI";
+import "@/assets/styles/daily-randomizer.css";
 
-// default preset tasks
+// Preset tasks
 const PRESET_TASKS = [
     { name: "📚 לימודים", duration: 45 },
     { name: "🍽️ אוכל", duration: 20 },
@@ -28,6 +29,7 @@ const PRESET_TASKS = [
     { name: "💤 שינה קצרה", duration: 20 },
 ];
 
+// Utility functions
 function parseTime(str) {
     const [h, m] = str.split(":").map(Number);
     return h * 60 + m;
@@ -54,13 +56,9 @@ function calculateBreakDuration(taskDuration) {
     else if (taskDuration <= 45) baseBreak = 10;
     else baseBreak = 15;
 
-    // Add randomness: ±2–3 minutes
-    const randomOffset = (Math.random() * 6 - 3); // -3 to +3
+    const randomOffset = Math.random() * 6 - 3;
     let finalBreak = baseBreak + randomOffset;
-
-    // Clamp to 5–20 minutes
     finalBreak = Math.max(5, Math.min(20, finalBreak));
-
     return Math.round(finalBreak);
 }
 
@@ -126,6 +124,11 @@ export default function DailyRandomizer() {
     const [gCalError, setGCalError] = useState(null);
     const savedSchedulesRef = useRef(null);
 
+    // Reset gCalToken on app load to prevent reused tokens without Calendar scope
+    useEffect(() => {
+        setGCalToken(null);
+    }, []);
+
     useEffect(() => {
         if (user) {
             loadSavedSchedules();
@@ -140,7 +143,7 @@ export default function DailyRandomizer() {
             const snap = await getDocs(q);
             setSavedSchedules(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
         } catch (err) {
-            console.error(err);
+            console.error("Error loading schedules:", err);
         }
     };
 
@@ -251,7 +254,6 @@ export default function DailyRandomizer() {
             ...newSchedule[editingBreakIdx],
             duration: Number(editBreakDuration),
         };
-        // Recalculate all start/end times from this break onward
         const recalc = recalculateSchedule(newSchedule, startTime);
         setSchedule(recalc);
         setEditingBreakIdx(null);
@@ -263,7 +265,7 @@ export default function DailyRandomizer() {
 
     const saveSchedule = async () => {
         if (!user) {
-            alert("יש להתחבר כדי לשמור");
+            showToast("❌ יש להתחבר כדי לשמור");
             return;
         }
         try {
@@ -278,10 +280,8 @@ export default function DailyRandomizer() {
             };
 
             if (editingDocId) {
-                // Overwrite existing document
                 await setDoc(doc(db, "users", user.uid, "dailySchedules", editingDocId), data, { merge: true });
             } else {
-                // Create new document
                 const schedulesCol = collection(db, "users", user.uid, "dailySchedules");
                 await addDoc(schedulesCol, data);
             }
@@ -296,10 +296,7 @@ export default function DailyRandomizer() {
             setEditingDocId(null);
 
             // Show success toast
-            setSaveToast(true);
-            const toastTimer = setTimeout(() => {
-                setSaveToast(false);
-            }, 3000);
+            showToast("הלוח נשמר בהצלחה! ✅");
 
             // Load updated schedules
             await loadSavedSchedules();
@@ -311,8 +308,8 @@ export default function DailyRandomizer() {
                 }
             }, 100);
         } catch (err) {
-            console.error(err);
-            alert("שגיאה בשמירה. אנא נסה שוב.");
+            console.error("Save error:", err);
+            showToast("❌ שגיאה בשמירה. אנא נסה שוב.");
         }
     };
 
@@ -324,7 +321,7 @@ export default function DailyRandomizer() {
             setExpandedScheduleId(null);
             await loadSavedSchedules();
         } catch (err) {
-            console.error(err);
+            console.error("Delete error:", err);
         }
     };
 
@@ -362,20 +359,53 @@ export default function DailyRandomizer() {
         try {
             setGCalError(null);
             const auth = getAuth();
+            
+            // Sign out first to clear any cached credentials without Calendar scope
+            console.log('Signing out to clear cached credentials...');
+            await signOut(auth);
+            
+            // Wait a moment for signout to complete
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             const provider = new GoogleAuthProvider();
-            // Add Calendar scope for creating events
+            // Request Calendar scope
             provider.addScope('https://www.googleapis.com/auth/calendar.events');
-            // Force consent screen to appear so user grants Calendar permission
-            provider.setCustomParameters({ prompt: 'consent' });
+            
+            // Force fresh consent dialog
+            provider.setCustomParameters({
+                prompt: 'consent',
+                access_type: 'offline'  // Request refresh token too
+            });
+            
+            console.log('Requesting Google auth with Calendar scope...');
             const result = await signInWithPopup(auth, provider);
+            
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
+            const idToken = credential.idToken;
+            
+            if (!token) {
+                throw new Error('Did not receive access token from Google. Make sure Calendar API is enabled in Google Cloud Console.');
+            }
+            
+            console.log('✅ Received access token successfully');
+            console.log('Token preview:', token.substring(0, 20) + '...');
+            console.log('ID Token exists:', !!idToken);
+            
             setGCalToken(token);
-            showToast('✅ Google Calendar מחובר בהצלחה');
-        } catch (error) {
-            console.error('Google Calendar connection error:', error);
-            setGCalError('שגיאה בחיבור ל-Google Calendar');
-            showToast('❌ שגיאה בחיבור ל-Google Calendar, אנא נסה שוב');
+            showToast('✅ Google Calendar מחובר בהצלחה! (עם הרשאות)');
+        } catch (err) {
+            console.error('GCal connect error:', err);
+            console.error('Error code:', err.code);
+            console.error('Error message:', err.message);
+            
+            // Check if it's a user cancellation
+            if (err.code === 'auth/popup-closed-by-user') {
+                showToast('❌ ביטלת את הדיאלוג. נסה שוב');
+            } else {
+                setGCalError(err.message || 'שגיאה בחיבור');
+                showToast('❌ שגיאה בחיבור ל-Google Calendar\\nודא שהותקן Calendar API בGoogle Cloud Console');
+            }
         }
     };
 
@@ -395,14 +425,12 @@ export default function DailyRandomizer() {
 
             if (err.message === 'TOKEN_EXPIRED') {
                 setGCalToken(null);
-                showToast('❌ פג תוקף החיבור ל-Google Calendar, אנא התחבר מחדש');
-            } else if (err.message === 'NO_TOKEN') {
-                showToast('❌ אנא חבר את Google Calendar תחילה');
-            } else if (err.message === 'NO_TASKS') {
-                showToast('❌ אין משימות לשלוח');
+                showToast('❌ פג תוקף החיבור, אנא התחבר מחדש');
             } else if (err.message === 'INSUFFICIENT_PERMISSIONS') {
                 setGCalToken(null);
-                showToast('❌ אין הרשאות מספיקות ל-Google Calendar');
+                showToast('❌ אין הרשאות מספיקות ל-Google Calendar, התחבר שוב');
+            } else if (err.message === 'NO_TASKS') {
+                showToast('❌ אין משימות לשכפל');
             } else {
                 showToast('❌ שגיאה בשליחה ל-Google Calendar, נסה שוב');
             }
@@ -413,385 +441,347 @@ export default function DailyRandomizer() {
     };
 
     return (
-        <div className="page-wrapper daily-randomizer" dir="rtl">
-            <div className="page-content">
-                <div className="form-wrapper">
-                    <div
-                        className="form-header"
-                        style={{
-                            background: "linear-gradient(135deg, var(--primary), var(--purple))",
-                        }}
-                    >
-                        <h1>מתזמן המשימות היומי</h1>
-                        <p>בנה לעצמך לוח זמנים אקראי עם הפסקות</p>
+        <div className="daily-randomizer" dir="rtl">
+            {/* SECTION 1: Page Header */}
+            <div className="page-header">
+                <h1>🎲 מתזמן המשימות היומי</h1>
+                <p>בנה את היום שלך בקלות</p>
+            </div>
+
+            <div className="page-sections">
+                {/* SECTION 2: Preset Tasks Toolbar */}
+                <div className="section preset-section">
+                    <div className="section-label">משימות מהירות – לחץ להוספה</div>
+                    <div className="preset-scroll">
+                        {PRESET_TASKS.map((preset, idx) => (
+                            <button
+                                key={idx}
+                                className="preset-chip"
+                                onClick={() => addPresetTask(preset)}
+                            >
+                                {preset.name} {preset.duration} דק׳
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* SECTION 3: Task Builder Card */}
+                <div className="section card task-builder-section">
+                    <h2>➕ הוסף משימה</h2>
+
+                    {/* Task inputs */}
+                    <div className="task-input-row">
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="שם המשימה"
+                            className="task-name-input"
+                            onKeyDown={(e) => e.key === 'Enter' && addTask()}
+                        />
+                        <input
+                            type="number"
+                            min={1}
+                            value={duration}
+                            onChange={(e) => setDuration(e.target.value)}
+                            placeholder="דקות"
+                            className="task-duration-input"
+                            onKeyDown={(e) => e.key === 'Enter' && addTask()}
+                        />
+                        <button onClick={addTask} className="btn-add-task">
+                            הוסף
+                        </button>
                     </div>
 
-                    <div className="form-body">
-                        {/* Preset tasks toolbar */}
-                        <div className="preset-toolbar">
-                            <div className="preset-label">משימות מומלצות:</div>
-                            <div className="preset-scroll">
-                                {PRESET_TASKS.map((preset, idx) => (
-                                    <button
-                                        key={idx}
-                                        className="preset-chip"
-                                        onClick={() => addPresetTask(preset)}
-                                        draggable
-                                        onDragStart={(e) => {
-                                            e.dataTransfer.effectAllowed = "copy";
-                                            e.dataTransfer.setData("text/plain", JSON.stringify(preset));
-                                        }}
-                                    >
-                                        {preset.name} · {preset.duration} דקות
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Day name */}
-                        <div className="day-name">
-                            <label>
-                                שם היום (אופציונלי)
-                                <input
-                                    type="text"
-                                    value={dayName}
-                                    onChange={(e) => setDayName(e.target.value)}
-                                    placeholder="למשל: יום שני, יום עבודה, יום חקלאות"
-                                />
-                            </label>
-                        </div>
-
-                        {/* Custom task input */}
-                        <div className="task-builder">
-                            <label>
-                                שם המשימה
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="למשל: ללמוד, כביסה, אכול ארוחה"
-                                />
-                            </label>
-                            <label>
-                                זמן בדקות
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={duration}
-                                    onChange={(e) => setDuration(e.target.value)}
-                                    placeholder="30"
-                                />
-                            </label>
-                            <button onClick={addTask} className="btn-add">
-                                הוסף משימה
-                            </button>
-                        </div>
-
-                        {/* Tasks list */}
-                        {tasks.length > 0 ? (
-                            <div className="task-list">
-                                {tasks.map((t, i) => (
-                                    <div key={i} className="task-card">
-                                        {editingTaskIdx === i ? (
-                                            <div className="task-edit">
-                                                <input
-                                                    type="text"
-                                                    value={editName}
-                                                    onChange={(e) => setEditName(e.target.value)}
-                                                    className="task-edit-input"
-                                                />
-                                                <input
-                                                    type="number"
-                                                    min={1}
-                                                    value={editDuration}
-                                                    onChange={(e) => setEditDuration(e.target.value)}
-                                                    className="task-edit-input"
-                                                />
-                                                <button onClick={saveEditTask} className="btn-small">
-                                                    ✓ שמור
-                                                </button>
-                                                <button onClick={cancelEditTask} className="btn-small btn-cancel-small">
-                                                    ✕ בטל
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div
-                                                className="task-display"
-                                                onClick={() => startEditTask(i)}
-                                            >
-                                                <span>
-                                                    {t.name} – {t.duration} דקות
-                                                </span>
+                    {/* Tasks list */}
+                    {tasks.length > 0 ? (
+                        <div className="tasks-list">
+                            {tasks.map((t, i) => (
+                                <div key={i} className="task-item">
+                                    {editingTaskIdx === i ? (
+                                        <div className="task-edit-row">
+                                            <input
+                                                type="text"
+                                                value={editName}
+                                                onChange={(e) => setEditName(e.target.value)}
+                                                className="task-edit-input"
+                                                autoFocus
+                                            />
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={editDuration}
+                                                onChange={(e) => setEditDuration(e.target.value)}
+                                                className="task-edit-input"
+                                            />
+                                            <button onClick={saveEditTask} className="btn-confirm">✓</button>
+                                            <button onClick={cancelEditTask} className="btn-cancel">✕</button>
+                                        </div>
+                                    ) : (
+                                        <div className="task-display">
+                                            <span className="task-info">{t.name} · {t.duration} דקות</span>
+                                            <div className="task-actions">
                                                 <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        removeTask(i);
-                                                    }}
-                                                    className="btn-delete-small"
+                                                    onClick={() => startEditTask(i)}
+                                                    className="btn-edit-task"
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button
+                                                    onClick={() => removeTask(i)}
+                                                    className="btn-delete-task"
                                                 >
                                                     🗑️
                                                 </button>
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        ) : null}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="empty-state">עדיין אין משימות – הוסף משימה למעלה 👆</div>
+                    )}
+                </div>
 
-                        {tasks.length === 0 && schedule.length === 0 && (
-                            <p className="empty-state">טרם נוספו משימות</p>
-                        )}
-
-
-                        {/* Start time */}
-                        <div className="start-time">
-                            <label>
-                                שעת התחלה
+                {/* SECTION 4: Schedule Controls Card */}
+                {tasks.length > 0 && (
+                    <div className="section card controls-section">
+                        <div className="control-row">
+                            <label className="control-label">
+                                🕘 שעת התחלה
                                 <input
                                     type="time"
                                     value={startTime}
                                     onChange={(e) => setStartTime(e.target.value)}
+                                    className="time-input"
                                 />
                             </label>
                         </div>
 
-                        {/* Randomize button */}
-                        {tasks.length > 0 && (
-                            <button onClick={randomize} className="btn-primary">
-                                סדר לי את היום 🎲
-                            </button>
-                        )}
+                        {/* Day name input */}
+                        <label className="control-label">
+                            📝 שם היום (אופציונלי)
+                            <input
+                                type="text"
+                                value={dayName}
+                                onChange={(e) => setDayName(e.target.value)}
+                                placeholder="למשל: יום שני, יום עבודה"
+                                className="dayname-input"
+                            />
+                        </label>
 
-                        {/* Schedule output */}
-                        {schedule.length > 0 && (
-                            <>
-                                <div className="save-row">
-                                    {user && (
+                        <button onClick={randomize} className="btn-randomize">
+                            סדר לי את היום 🎲
+                        </button>
+                    </div>
+                )}
+
+                {/* SECTION 5: Generated Timeline Card */}
+                {schedule.length > 0 && (
+                    <div className="section card timeline-section">
+                        <h2>📅 לוח היום שלך</h2>
+
+                        {/* Timeline items */}
+                        <div className="timeline">
+                            {schedule.map((item, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`timeline-item timeline-${item.type}`}
+                                    draggable={item.type === "task"}
+                                    onDragStart={(e) => item.type === "task" && handleDragStart(e, idx)}
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => item.type === "task" && handleDropSchedule(e, idx)}
+                                >
+                                    {item.type === "task" ? (
                                         <>
-                                            <button onClick={saveSchedule} className="btn-secondary">
-                                                {editingDocId ? "עדכן לוח יום ✏️" : "שמור לוח יום 💾"}
-                                            </button>
-                                            {editingDocId && (
-                                                <button onClick={cancelEditSchedule} className="btn-secondary btn-cancel">
-                                                    בטל עריכה ✕
+                                            <span className="drag-handle">⠿</span>
+                                            <div className="timeline-content">
+                                                <span className="timeline-title">{item.title}</span>
+                                                <span className="timeline-time">
+                                                    {formatMinutes(item.start)} – {formatMinutes(item.end)}
+                                                </span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="timeline-content">
+                                                <span className="timeline-title">{item.title}</span>
+                                                <span className="timeline-time">
+                                                    {formatMinutes(item.start)} – {formatMinutes(item.end)}
+                                                </span>
+                                            </div>
+                                            {editingBreakIdx === idx ? (
+                                                <div className="break-edit-inline">
+                                                    <input
+                                                        type="number"
+                                                        min={1}
+                                                        value={editBreakDuration}
+                                                        onChange={(e) => setEditBreakDuration(e.target.value)}
+                                                        autoFocus
+                                                    />
+                                                    <span>דקות</span>
+                                                    <button onClick={saveEditBreak} className="btn-confirm">✓</button>
+                                                    <button onClick={cancelEditBreak} className="btn-cancel">✕</button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => startEditBreak(idx)}
+                                                    className="btn-edit-break"
+                                                    title="ערוך משך הפסקה"
+                                                >
+                                                    ✏️
                                                 </button>
                                             )}
                                         </>
                                     )}
-                                    {!user && <p className="login-hint">יש להתחבר כדי לשמור</p>}
-                                    {user && !gCalToken && (
-                                        <button
-                                            onClick={connectGoogleCalendar}
-                                            className="btn-secondary"
-                                            style={{ background: '#ea4335' }}
-                                        >
-                                            🔗 חבר את Google Calendar
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Save + Google Calendar section */}
+                        <div className="actions-row">
+                            {user && (
+                                <>
+                                    <button onClick={saveSchedule} className="btn-save">
+                                        {editingDocId ? "עדכן לוח יום ✏️" : "שמור לוח יום 💾"}
+                                    </button>
+                                    {editingDocId && (
+                                        <button onClick={cancelEditSchedule} className="btn-cancel-edit">
+                                            בטל עריכה ✕
                                         </button>
                                     )}
-                                    {user && gCalToken && (
-                                        <>
-                                            <button
-                                                onClick={() => {
-                                                    const today = new Date().toISOString().split("T")[0];
-                                                    pushScheduleToGoogleCalendar(schedule, today);
-                                                }}
-                                                disabled={gCalLoading}
-                                                className="btn-secondary"
-                                                style={{ background: '#34a853', opacity: gCalLoading ? 0.6 : 1 }}
-                                            >
-                                                {gCalLoading ? '⏳ שמירה לעיבוד...' : '📅 שמור הכל ב-Google Calendar'}
-                                            </button>
-                                            <span style={{ color: '#34a853', fontSize: '12px', fontWeight: '600' }}>
-                                                ✅ Google Calendar מחובר
-                                            </span>
-                                            {gCalError && (
-                                                <div style={{ color: '#d32f2f', fontSize: '12px', marginTop: '8px' }}>
-                                                    שגיאה: {gCalError}
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                    <button onClick={randomize} className="btn-secondary">
-                                        ערבב מחדש 🔀
+                                </>
+                            )}
+                            {!user && <p className="login-hint">👤 התחבר כדי לשמור</p>}
+                        </div>
+
+                        {/* Google Calendar section */}
+                        <div className="gcal-section">
+                            {user && !gCalToken && (
+                                <>
+                                    <button
+                                        onClick={connectGoogleCalendar}
+                                        className="btn-gcal-connect"
+                                    >
+                                        🔗 חבר את Google Calendar
                                     </button>
-                                </div>
-
-                                <div className="schedule">
-                                    {schedule.map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            className={`schedule-item schedule-${item.type}`}
-                                            draggable={item.type === "task"}
-                                            onDragStart={(e) => item.type === "task" && handleDragStart(e, idx)}
-                                            onDragOver={handleDragOver}
-                                            onDrop={(e) => item.type === "task" && handleDropSchedule(e, idx)}
-                                        >
-                                            {item.type === "task" ? (
-                                                <>
-                                                    <span className="drag-handle">⠿</span>
-                                                    <div className="schedule-content">
-                                                        <span>{item.title}</span>
-                                                        <span className="schedule-time">
-                                                            {formatMinutes(item.start)} – {formatMinutes(item.end)}
-                                                        </span>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className="schedule-content">
-                                                        <span>{item.title}</span>
-                                                        <span className="schedule-time">
-                                                            {formatMinutes(item.start)} – {formatMinutes(item.end)}
-                                                        </span>
-                                                    </div>
-                                                    {editingBreakIdx === idx ? (
-                                                        <div className="break-edit">
-                                                            <input
-                                                                type="number"
-                                                                min={1}
-                                                                value={editBreakDuration}
-                                                                onChange={(e) => setEditBreakDuration(e.target.value)}
-                                                                className="break-edit-input"
-                                                                autoFocus
-                                                                onKeyDown={(e) => {
-                                                                    if (e.key === "Enter") saveEditBreak();
-                                                                    if (e.key === "Escape") cancelEditBreak();
-                                                                }}
-                                                            />
-                                                            <span className="break-edit-unit">דקות</span>
-                                                            <button onClick={saveEditBreak} className="btn-break-confirm">
-                                                                ✓
-                                                            </button>
-                                                            <button onClick={cancelEditBreak} className="btn-break-cancel">
-                                                                ✕
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => startEditBreak(idx)}
-                                                            className="btn-break-edit"
-                                                            title="ערוך משך הפסקה"
-                                                        >
-                                                            ✏️
-                                                        </button>
-                                                    )}
-                                                </>
+                                    <p className="gcal-help-text">
+                                        💡 עברה את כל המשימות שלך ישירות ל-Google Calendar. לחץ וחזור עם הרשאות.
+                                    </p>
+                                </>
+                            )}
+                            {user && gCalToken && (
+                                <>
+                                    <button
+                                        onClick={() => {
+                                            const today = new Date().toISOString().split("T")[0];
+                                            pushScheduleToGoogleCalendar(schedule, today);
+                                        }}
+                                        disabled={gCalLoading}
+                                        className="btn-gcal-push"
+                                    >
+                                        {gCalLoading ? '⏳ שמירה...' : '📅 שמור הכל ב-Google Calendar'}
+                                    </button>
+                                    <span className="gcal-connected">✅ Google Calendar מחובר</span>
+                                    {gCalError && (
+                                        <div className="gcal-error">
+                                            <strong>שגיאה:</strong> {gCalError}
+                                            {gCalError === 'INSUFFICIENT_PERMISSIONS' && (
+                                                <p>👉 הרשאות לא ניתנו. לחץ שוב על הכפתור וודא שאתה מאשר את Google Calendar.</p>
                                             )}
                                         </div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-
-                        {/* Saved schedules */}
-                        {savedSchedules.length > 0 && (
-                            <div className="saved-schedules" ref={savedSchedulesRef}>
-                                <h3>לוחות יום שנשמרו</h3>
-                                {savedSchedules.map((saved) => (
-                                    <div key={saved.id} className="saved-schedule-card">
-                                        <div
-                                            className="saved-header"
-                                            onClick={() =>
-                                                setExpandedScheduleId(
-                                                    expandedScheduleId === saved.id ? null : saved.id
-                                                )
-                                            }
-                                        >
-                                            <div className="saved-info">
-                                                {saved.dayName && (
-                                                    <span className="saved-day-name">{saved.dayName}</span>
-                                                )}
-                                                <span className="saved-date">
-                                                    {new Date(saved.date).toLocaleDateString("he-IL")}
-                                                </span>
-                                                <span className="saved-time">מ-{saved.startTime}</span>
-                                                <span className="saved-duration">
-                                                    {calculateTotalDuration(saved.schedule)} דקות
-                                                </span>
-                                            </div>
-                                            <span className="saved-expand-icon">
-                                                {expandedScheduleId === saved.id ? "▼" : "▶"}
-                                            </span>
-                                        </div>
-                                        <div className="saved-tasks-count">
-                                            {saved.tasks.length} משימות
-                                        </div>
-
-                                        {expandedScheduleId === saved.id && (
-                                            <div className="saved-expanded">
-                                                {/* Timeline preview */}
-                                                <div className="saved-timeline">
-                                                    {saved.schedule.map((item, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            className={`schedule-item schedule-${item.type}`}
-                                                        >
-                                                            {item.type === "task" ? (
-                                                                <>
-                                                                    <div className="schedule-content">
-                                                                        <span>{item.title}</span>
-                                                                        <span className="schedule-time">
-                                                                            {formatMinutes(item.start)} –{" "}
-                                                                            {formatMinutes(item.end)}
-                                                                        </span>
-                                                                    </div>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <div className="schedule-content">
-                                                                        <span>{item.title}</span>
-                                                                        <span className="schedule-time">
-                                                                            {formatMinutes(item.start)} –{" "}
-                                                                            {formatMinutes(item.end)}
-                                                                        </span>
-                                                                    </div>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                {/* Action buttons */}
-                                                <div className="saved-actions">
-                                                    <button
-                                                        onClick={() => loadScheduleIntoEditor(saved)}
-                                                        className="btn-secondary"
-                                                    >
-                                                        ערוך לוח יום ✏️
-                                                    </button>
-                                                    {user && gCalToken && (
-                                                        <button
-                                                            onClick={() => pushScheduleToGoogleCalendar(saved.schedule, saved.date)}
-                                                            disabled={gCalLoading}
-                                                            className="btn-secondary"
-                                                            style={{ background: '#34a853', opacity: gCalLoading ? 0.6 : 1 }}
-                                                        >
-                                                            {gCalLoading ? '⏳ שמירה לעיבוד...' : '📅 שמור ב-Google Calendar'}
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => deleteSavedSchedule(saved.id)}
-                                                        className="btn-delete"
-                                                    >
-                                                        מחק 🗑️
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* SECTION 6: Saved Schedules Card */}
+                {savedSchedules.length > 0 && (
+                    <div className="section card saved-section" ref={savedSchedulesRef}>
+                        <h2>📂 לוחות שמורים</h2>
+
+                        {savedSchedules.map((saved) => (
+                            <div key={saved.id} className="saved-card">
+                                <div
+                                    className="saved-header-clickable"
+                                    onClick={() =>
+                                        setExpandedScheduleId(
+                                            expandedScheduleId === saved.id ? null : saved.id
+                                        )
+                                    }
+                                >
+                                    <div className="saved-info">
+                                        {saved.dayName && (
+                                            <span className="saved-day-badge">{saved.dayName}</span>
+                                        )}
+                                        <span className="saved-date">
+                                            {new Date(saved.date).toLocaleDateString("he-IL")}
+                                        </span>
+                                        <span className="saved-meta">
+                                            {saved.startTime} • {calculateTotalDuration(saved.schedule)} דקות • {saved.tasks.length} משימות
+                                        </span>
+                                    </div>
+                                    <span className="expand-icon">
+                                        {expandedScheduleId === saved.id ? "▼" : "▶"}
+                                    </span>
+                                </div>
+
+                                {/* Expanded timeline */}
+                                {expandedScheduleId === saved.id && (
+                                    <div className="saved-expanded">
+                                        <div className="saved-timeline">
+                                            {saved.schedule.map((item, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className={`timeline-item timeline-${item.type}`}
+                                                >
+                                                    <div className="timeline-content">
+                                                        <span className="timeline-title">{item.title}</span>
+                                                        <span className="timeline-time">
+                                                            {formatMinutes(item.start)} – {formatMinutes(item.end)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Saved schedule actions */}
+                                        <div className="saved-actions">
+                                            <button
+                                                onClick={() => loadScheduleIntoEditor(saved)}
+                                                className="btn-edit-saved"
+                                            >
+                                                ערוך ✏️
+                                            </button>
+                                            {user && gCalToken && (
+                                                <button
+                                                    onClick={() => pushScheduleToGoogleCalendar(saved.schedule, saved.date)}
+                                                    disabled={gCalLoading}
+                                                    className="btn-gcal-saved"
+                                                >
+                                                    {gCalLoading ? '⏳ שמירה...' : '📅 Google Calendar'}
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => deleteSavedSchedule(saved.id)}
+                                                className="btn-delete-saved"
+                                            >
+                                                מחק 🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {/* Success toast */}
-            {saveToast && (
-                <div className="save-toast">
-                    הלוח נשמר בהצלחה! ✅
-                </div>
-            )}
+            {/* Toast notification */}
+            {saveToast && <div className="toast">{saveToast}</div>}
         </div>
     );
 }
