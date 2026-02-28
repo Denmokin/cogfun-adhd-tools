@@ -51,3 +51,126 @@
   gap: 8px;
   flex-shrink: 0;
 }
+
+/* dropdown navigation */
+.topbar-nav {
+  position: relative;
+  z-index: 150;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: color 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+}
+
+.dropbtn::after {
+  content: '▾';
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 12px;
+}
+
+.dropbtn:hover {
+  background: var(--surface-2);
+  color: var(--primary);
+}
+
+.dropbtn.active {
+  background: var(--surface-2);
+  color: var(--primary);
+}
+
+.dropbtn.active::after {
+  transform: rotate(180deg);
+}
+
+.dropdown-content {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 200;
+  min-width: 200px;
+  animation: dropdownSlideDown 0.2s ease forwards;
+}
+
+@keyframes dropdownSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 12px 16px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.15s ease, color 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.dropdown-content a:first-child {
+  border-top: none;
+}
+
+.dropdown-content a:hover {
+  background: var(--surface-2);
+  color: var(--primary);
+  border-left-color: var(--primary);
+}
+
+.dropdown-content a:active,
+.dropdown-content a.nav-active {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--primary);
+  border-left-color: var(--primary);
+  font-weight: 600;
+}
+
+/* mobile styles */
+@media (max-width: 700px) {
+  .dropbtn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .dropbtn::after {
+    font-size: 11px;
+  }
+
+  .dropdown-content {
+    min-width: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .dropdown-content a {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}

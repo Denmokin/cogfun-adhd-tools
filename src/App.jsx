@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import AAAPage from "./pages/AAAPage";
 import OPEAPage from "./pages/OPEAPage";
 import Results from "./pages/Results";
+import DailyRandomizer from "./pages/DailyRandomizer";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/aaa" element={<AAAPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/opea" element={<OPEAPage />} />
+        <Route path="/daily" element={<DailyRandomizer />} />
         <Route path="/results" element={<Results />} />
       </Route>
 
