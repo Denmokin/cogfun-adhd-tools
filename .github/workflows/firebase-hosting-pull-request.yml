@@ -17,5 +17,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_COGFUN_ADHD_TOOLS }}
-          projectId: cogfun-adhd-tools
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_COGFUN_ADHD_TOOLS_B764B }}
+          projectId: cogfun-adhd-tools-b764b
