@@ -1,10 +1,11 @@
 /* ================================================================
-   AAA + OPEA — Master Stylesheet (1-7 structure)
-   1. Variables   2. Reset   3. Layout   4. Auth
+   AAA + OPEA — Master Stylesheet (1-7 structure) + design system
+   1. Variables   1.5 Design tokens/utilities   2. Reset   3. Layout   4. Auth
    5. Topbar      6. Forms   7. Cards & Buttons & Responsive
    ================================================================ */
 
 @import "./comp-styles/01-variables.css";
+@import "./comp-styles/08-design-system.css"; /* global tokens & utilities */
 @import "./comp-styles/02-reset.css";
 @import "./comp-styles/03-layout.css";
 @import "./comp-styles/04-auth.css";

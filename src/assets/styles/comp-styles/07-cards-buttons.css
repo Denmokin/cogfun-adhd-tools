@@ -269,7 +269,12 @@
   border-color: rgba(16, 185, 129, .2);
 }
 
-/* 7.2 Buttons */
+/* 7.2 Buttons (legacy)
+   the old `.submit-btn` class was used for form submit buttons. it has been
+   superseded by the design‑system utilities (`.btn`, `.btn-primary`, `.btn-block`).
+   the rules are retained here for backwards compatibility but will be removed once
+   all forms use the new classes. */
+/*
 .submit-btn {
   width: 100%;
   padding: 14px;
@@ -291,6 +296,7 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+*/
 
 .btn-google {
   display: flex;

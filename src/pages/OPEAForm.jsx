@@ -239,8 +239,7 @@ export default function OPEAForm() {
 
           <button
             type="submit"
-            className="submit-btn"
-            style={{ background: 'linear-gradient(135deg,#10b981,#059669)' }}
+            className="btn btn-success btn-block"
             disabled={submitting}
           >
             {submitting ? '⏳ שומר...' : isEdit ? '✏️ עדכן OPEA' : '💾 שמור OPEA'}

@@ -238,7 +238,7 @@ export default function AAAForm() {
             </div>
           </div>
 
-          <button type="submit" className="submit-btn" disabled={submitting}>
+          <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
             {submitting ? '⏳ שומר...' : editingId ? '✏️ עדכן' : '💾 שמור טופס AAA'}
           </button>
           {editingId && (

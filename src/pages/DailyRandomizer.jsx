@@ -105,6 +105,9 @@ export default function DailyRandomizer() {
     const { user } = useAuth();
     const [tasks, setTasks] = useState([]);
     const [name, setName] = useState("");
+    
+    // ensure outer layout matches other pages
+    // the top-level wrapper is added in the JSX return below
     const [duration, setDuration] = useState(30);
     const [startTime, setStartTime] = useState("09:00");
     const [schedule, setSchedule] = useState([]);
@@ -464,7 +467,7 @@ export default function DailyRandomizer() {
     };
 
     return (
-        <div className="daily-randomizer" dir="rtl">
+        <div className="page-wrapper daily-randomizer" dir="rtl">
             {/* SECTION 1: Page Header */}
             <div className="page-header">
                 <h1>🎲 מתזמן המשימות היומי</h1>
@@ -511,7 +514,7 @@ export default function DailyRandomizer() {
                             className="task-duration-input"
                             onKeyDown={(e) => e.key === 'Enter' && addTask()}
                         />
-                        <button onClick={addTask} className="btn-add-task">
+                        <button onClick={addTask} className="btn btn-add btn-sm">
                             הוסף
                         </button>
                     </div>
@@ -537,8 +540,8 @@ export default function DailyRandomizer() {
                                                 onChange={(e) => setEditDuration(e.target.value)}
                                                 className="task-edit-input"
                                             />
-                                            <button onClick={saveEditTask} className="btn-confirm">✓</button>
-                                            <button onClick={cancelEditTask} className="btn-cancel">✕</button>
+                                            <button onClick={saveEditTask} className="btn btn-success btn-sm">✓</button>
+                                            <button onClick={cancelEditTask} className="btn btn-danger btn-sm">✕</button>
                                         </div>
                                     ) : (
                                         <div className="task-display">
@@ -546,13 +549,13 @@ export default function DailyRandomizer() {
                                             <div className="task-actions">
                                                 <button
                                                     onClick={() => startEditTask(i)}
-                                                    className="btn-edit-task"
+                                                    className="btn btn-primary btn-sm"
                                                 >
                                                     ✏️
                                                 </button>
                                                 <button
                                                     onClick={() => removeTask(i)}
-                                                    className="btn-delete-task"
+                                                    className="btn btn-danger btn-sm"
                                                 >
                                                     🗑️
                                                 </button>
@@ -594,7 +597,7 @@ export default function DailyRandomizer() {
                             />
                         </label>
 
-                        <button onClick={randomize} className="btn-randomize">
+                        <button onClick={randomize} className="btn btn-primary btn-block">
                             סדר לי את היום 🎲
                         </button>
                     </div>
@@ -644,13 +647,13 @@ export default function DailyRandomizer() {
                                                         autoFocus
                                                     />
                                                     <span>דקות</span>
-                                                    <button onClick={saveEditBreak} className="btn-confirm">✓</button>
-                                                    <button onClick={cancelEditBreak} className="btn-cancel">✕</button>
+                                                    <button onClick={saveEditBreak} className="btn btn-success btn-sm">✓</button>
+                                                    <button onClick={cancelEditBreak} className="btn btn-danger btn-sm">✕</button>
                                                 </div>
                                             ) : (
                                                 <button
                                                     onClick={() => startEditBreak(idx)}
-                                                    className="btn-edit-break"
+                                                    className="btn btn-primary btn-sm"
                                                     title="ערוך משך הפסקה"
                                                 >
                                                     ✏️
@@ -666,11 +669,11 @@ export default function DailyRandomizer() {
                         <div className="actions-row">
                             {user && (
                                 <>
-                                    <button onClick={saveSchedule} className="btn-save">
+                                    <button onClick={saveSchedule} className="btn btn-primary btn-block">
                                         {editingDocId ? "עדכן לוח יום ✏️" : "שמור לוח יום 💾"}
                                     </button>
                                     {editingDocId && (
-                                        <button onClick={cancelEditSchedule} className="btn-cancel-edit">
+                                        <button onClick={cancelEditSchedule} className="btn btn-secondary btn-block">
                                             בטל עריכה ✕
                                         </button>
                                     )}
@@ -685,9 +688,9 @@ export default function DailyRandomizer() {
                                 <>
                                     <button
                                         onClick={connectGoogleCalendar}
-                                        className="btn-gcal-connect"
+                                        className="btn btn-secondary btn-block"
                                     >
-                                        🔗 חבר את Google Calendar
+                                        תתחבר ליומן גוגל 📅
                                     </button>
                                     <p className="gcal-help-text">
                                         💡 עברה את כל המשימות שלך ישירות ל-Google Calendar. לחץ וחזור עם הרשאות.
@@ -698,15 +701,14 @@ export default function DailyRandomizer() {
                                 <>
                                     <button
                                         onClick={() => {
-                                            // Use local date instead of UTC
                                             const d = new Date();
                                             const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
                                             pushScheduleToGoogleCalendar(schedule, today);
                                         }}
                                         disabled={gCalLoading}
-                                        className="btn-gcal-push"
+                                        className="btn btn-success btn-block"
                                     >
-                                        {gCalLoading ? '⏳ שמירה...' : '📅 שמור הכל ב-Google Calendar'}
+                                        {gCalLoading ? '⏳ שמירה...' : 'הוסף ליומן גוגל 📅'}
                                     </button>
                                     <span className="gcal-connected">✅ Google Calendar מחובר</span>
                                     {gCalError && (
@@ -777,22 +779,30 @@ export default function DailyRandomizer() {
                                         <div className="saved-actions">
                                             <button
                                                 onClick={() => loadScheduleIntoEditor(saved)}
-                                                className="btn-edit-saved"
+                                                className="btn btn-primary btn-sm"
                                             >
                                                 ערוך ✏️
                                             </button>
-                                            {user && gCalToken && (
+                                            {user && (
                                                 <button
-                                                    onClick={() => pushScheduleToGoogleCalendar(saved.schedule, saved.date)}
-                                                    disabled={gCalLoading}
-                                                    className="btn-gcal-saved"
+                                                    onClick={async () => {
+                                                        if (gCalToken) {
+                                                            await pushScheduleToGoogleCalendar(saved.schedule, saved.date);
+                                                        } else {
+                                                            connectGoogleCalendar();
+                                                        }
+                                                    }}
+                                                    disabled={gCalLoading && gCalToken}
+                                                    className={
+                                                        `btn btn-sm ${gCalToken ? 'btn-success' : 'btn-primary'}`
+                                                    }
                                                 >
-                                                    {gCalLoading ? '⏳ שמירה...' : '📅 Google Calendar'}
+                                                    {gCalToken ? 'הוסף ליומן גוגל 📅' : 'תתחבר ליומן גוגל 📅'}
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => deleteSavedSchedule(saved.id)}
-                                                className="btn-delete-saved"
+                                                className="btn btn-danger btn-sm ml-1"
                                             >
                                                 מחק 🗑️
                                             </button>

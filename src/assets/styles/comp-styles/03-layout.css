@@ -4,6 +4,7 @@
 .page-wrapper {
   max-width: 900px;
   margin: 0 auto;
+  padding: 1.5rem; /* consistent internal spacing across all pages */
   display: flex;
   flex-direction: column;
   gap: 30px;

@@ -1,0 +1,142 @@
+/* ================================================================
+   1.5 Design System – tokens, typographic scale and utilities
+   ---------------------------------------------------------------
+   This file defines the foundations (font sizes, weights, colors) and
+   reusable utility classes for consistent UI across all pages (AAA, OPEA,
+   Daily‑Randomizer, Login, etc.). The goal is "one‑on‑one" styling: any
+   component using these helpers will look and behave the same anywhere.
+
+   Documentation:
+   • use the `--fs-*` variables for font-size
+   • use `--fw-*` variables for font-weight
+   • apply button variants via `.btn`, `.btn-primary`, `.btn-secondary`,
+     `.btn-danger`, etc.
+   • typography helper classes (heading, text sizes, muted)
+   • spacing utilities can be added here in future
+   ================================================================ */
+
+/* ------------------------------------------------------------
+   base typography
+   ------------------------------------------------------------ */
+body,
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  font-size: var(--fs-md);
+}
+
+/* ------------------------------------------------------------
+   typography helpers
+   ------------------------------------------------------------ */
+.h1, .heading-1 {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  line-height: 1.3;
+}
+.h2, .heading-2 {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+}
+.h3, .heading-3 {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+}
+
+.text-xs { font-size: var(--fs-xs); }
+.text-sm { font-size: var(--fs-sm); }
+.text-md, .text-base { font-size: var(--fs-md); }
+.text-lg { font-size: var(--fs-lg); }
+.text-xl { font-size: var(--fs-xl); }
+
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--primary); }
+
+/* ------------------------------------------------------------
+   button base & variants
+   ------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em 1em;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  opacity: 0.9;
+}
+
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  padding: 0.75em 1em;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+.btn-google:hover,
+.btn-google:focus {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-secondary:hover,
+.btn-secondary:focus {
+  opacity: 0.85;
+}
+
+.btn-danger {
+  background: var(--red);
+  color: #fff;
+}
+.btn-danger:hover,
+.btn-danger:focus {
+  opacity: 0.85;
+}
+
+.btn-sm { font-size: var(--fs-sm); padding: 0.25em 0.5em; }
+.btn-lg { font-size: var(--fs-lg); padding: 0.75em 1.25em; }
+
+/* extensible classes for icon buttons, full-width etc. */
+.btn-block { width: 100%; }
+
+/* Add additional variants as needed (success, warning, link) */
+.btn-success { background: var(--green); color: #fff; }
+.btn-warning { background: var(--yellow); color: #000; }
+
+/* ------------------------------------------------------------
+   utility helpers (spacing, flex, etc.)
+   ------------------------------------------------------------ */
+.d-flex { display: flex; }
+.justify-center { justify-content: center; }
+.align-center { align-items: center; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.ml-1 { margin-left: 0.25rem; }
+.ml-2 { margin-left: 0.5rem; }
+
+/* future: add .px-*, .py-* helpers etc. */

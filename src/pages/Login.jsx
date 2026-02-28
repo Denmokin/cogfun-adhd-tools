@@ -47,7 +47,7 @@ export default function Login() {
           <p>כדי לגשת לטפסים יש להתחבר עם חשבון Google</p>
           <button
             type="button"
-            className="btn-google"
+            className="btn btn-google"
             onClick={handleSignIn}
           >
             <img
