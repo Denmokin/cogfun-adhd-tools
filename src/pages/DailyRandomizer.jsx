@@ -11,7 +11,7 @@ import {
     setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { GoogleAuthProvider, signInWithPopup, getAuth, signOut } from "firebase/auth";
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, getAuth, signInWithPopup } from "firebase/auth";
 import { pushScheduleToGCal } from "@/utils/gcalAPI";
 import "@/assets/styles/daily-randomizer.css";
 
@@ -269,7 +269,9 @@ export default function DailyRandomizer() {
             return;
         }
         try {
-            const today = new Date().toISOString().split("T")[0];
+            // Use local date instead of UTC to prevent wrong-day issues late at night
+            const d = new Date();
+            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
             const data = {
                 date: today,
                 dayName,
@@ -360,13 +362,6 @@ export default function DailyRandomizer() {
             setGCalError(null);
             const auth = getAuth();
             
-            // Sign out first to clear any cached credentials without Calendar scope
-            console.log('Signing out to clear cached credentials...');
-            await signOut(auth);
-            
-            // Wait a moment for signout to complete
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
             const provider = new GoogleAuthProvider();
             // Request Calendar scope
             provider.addScope('https://www.googleapis.com/auth/calendar.events');
@@ -408,6 +403,34 @@ export default function DailyRandomizer() {
             }
         }
     };
+
+    // after redirect returns, this useEffect will process the result
+    useEffect(() => {
+        const processRedirect = async () => {
+            try {
+                const auth = getAuth();
+                const result = await getRedirectResult(auth);
+                if (!result) return; // no redirect pending
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                const token = credential?.accessToken;
+                if (token) {
+                    console.log('Received GCal token from redirect.');
+                    setGCalToken(token);
+                    showToast('✅ Google Calendar מחובר בהצלחה!');
+                } else {
+                    console.warn('No access token in redirect result.');
+                }
+            } catch (err) {
+                console.error('Error processing redirect result:', err);
+                if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
+                    showToast('❌ ביטלת את הדיאלוג. נסה שוב');
+                } else {
+                    setGCalError(err.message || 'שגיאה בעיבוד ההרשאה');
+                }
+            }
+        };
+        processRedirect();
+    }, []);
 
     const pushScheduleToGoogleCalendar = async (sched, schedDate) => {
         if (!gCalToken) {
@@ -675,7 +698,9 @@ export default function DailyRandomizer() {
                                 <>
                                     <button
                                         onClick={() => {
-                                            const today = new Date().toISOString().split("T")[0];
+                                            // Use local date instead of UTC
+                                            const d = new Date();
+                                            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
                                             pushScheduleToGoogleCalendar(schedule, today);
                                         }}
                                         disabled={gCalLoading}

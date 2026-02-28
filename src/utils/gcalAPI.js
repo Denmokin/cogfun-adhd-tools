@@ -56,15 +56,15 @@ export async function pushScheduleToGCal(schedule, accessToken, dateStr = null) 
     dateStr = new Date().toISOString().split('T')[0];
   }
 
-  // Filter only tasks (skip breaks)
-  const tasks = schedule.filter(block => block.type === 'task');
+  // No longer filtering only tasks
+  const scheduleBlocks = schedule;
 
-  if (!tasks.length) {
-    throw new Error('NO_TASKS');
+  if (!scheduleBlocks.length) {
+    throw new Error('NO_EVENTS');
   }
 
   // Build event objects with proper datetime formatting
-  const requests = tasks.map((block, i) => {
+  const requests = scheduleBlocks.map((block, i) => {
     // Convert minutes to "HH:mm" format
     const startTimeStr = minutesToTime(block.start);
     const endTimeStr = minutesToTime(block.end);
@@ -137,7 +137,7 @@ export async function pushScheduleToGCal(schedule, accessToken, dateStr = null) 
     }
   }
 
-  console.log('✅ All events created successfully!');
+  console.log('✅ All events and breaks created successfully!');
   return true;
 }
 
