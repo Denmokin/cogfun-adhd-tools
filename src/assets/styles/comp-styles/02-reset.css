@@ -1,0 +1,18 @@
+/* ================================================================
+   2. Reset & Base
+   ================================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 24px;
+  font-size: 15px;
+  transition: background var(--transition), color var(--transition);
+  direction: rtl;
+}

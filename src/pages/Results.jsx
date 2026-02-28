@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "@/auth";
 
 export default function Results() {
   const { user } = useAuth();

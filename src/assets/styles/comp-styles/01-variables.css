@@ -1,0 +1,40 @@
+/* ================================================================
+   1. Variables & Tokens
+   ================================================================ */
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-2: #fafbfc;
+  --border: #e8edf2;
+  --border-2: #dde3ec;
+  --text: #1a1a2e;
+  --text-2: #444444;
+  --text-3: #666666;
+  --text-muted: #999999;
+  --primary: #667eea;
+  --purple: #764ba2;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #ea580c;
+  --yellow: #f59e0b;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --transition: 0.2s ease;
+}
+
+[data-theme="dark"] {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface-2: #20232f;
+  --border: #2e3347;
+  --border-2: #3a3f55;
+  --text: #e8eaf0;
+  --text-2: #b0b4c8;
+  --text-3: #888da8;
+  --text-muted: #555a72;
+  --primary: #7c8ff5;
+  --purple: #9b6ec8;
+  --shadow: rgba(0, 0, 0, 0.35);
+}

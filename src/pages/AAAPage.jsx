@@ -2,7 +2,7 @@ import AAAForm from "./AAAForm";
 
 export default function AAAPage() {
   return (
-    <div style={{ padding: 40 }}>
+    <div className="page-content">
       <AAAForm />
     </div>
   );

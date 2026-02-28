@@ -1,23 +1,30 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "@/auth";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
-    <div style={{ padding: 40 }}>
-      <h2>Dashboard</h2>
-      <p>Welcome {user?.displayName}</p>
-      <p>{user?.email}</p>
-
-      <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-        <Link to="/aaa">AAA</Link>
-        <Link to="/opea">OPEA</Link>
-        <Link to="/results">Results</Link>
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        <button onClick={logout}>Logout</button>
+    <div className="page-wrapper">
+      <div className="page-content">
+        <div className="card">
+          <h2>🧠 AAA + OPEA</h2>
+          <p>שלום {user?.displayName || user?.email}</p>
+          <p style={{ marginTop: 12, color: 'var(--text-2)' }}>
+            Anticipatory Adaptive Awareness · Occupational Performance Experience Analysis
+          </p>
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Link to="/aaa" className="btn-edit" style={{ display: 'inline-block' }}>
+              📌 AAA – מודעות מנבאת מסתגלת
+            </Link>
+            <Link to="/opea" className="btn-opea" style={{ display: 'inline-block' }}>
+              📋 OPEA – ניתוח התנסות תפקודית
+            </Link>
+            <Link to="/results" className="btn-logout" style={{ display: 'inline-block', textDecoration: 'none' }}>
+              📊 תוצאות
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

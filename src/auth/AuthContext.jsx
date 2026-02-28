@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
-import { auth, googleProvider, db } from "./lib/firebase";
+import { auth, googleProvider, db } from "../lib/firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const AuthContext = createContext(null);
@@ -27,7 +27,6 @@ export function AuthProvider({ children }) {
           }
         }
       } catch (e) {
-        // If rules block this, you'll see it in console
         console.error("AuthContext user doc error:", e);
       }
 

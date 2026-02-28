@@ -1,0 +1,28 @@
+/* ================================================================
+   3. Layout
+   ================================================================ */
+.page-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.page-main {
+  padding-top: calc(56px + 16px + 24px);
+  min-height: 100vh;
+}
