@@ -1,30 +1,23 @@
-import { useEffect, useState } from "react";
-import { auth, googleProvider } from "./lib/firebase";
-import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { Routes, Route, Navigate } from "react-router-dom";
+import RequireAuth from "./auth/RequireAuth";
+
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import AAAPage from "./pages/AAAPage";
+import OPEAPage from "./pages/OPEAPage";
+import Results from "./pages/Results";
 
 export default function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    return onAuthStateChanged(auth, setUser);
-  }, []);
-
-  if (!user) {
-    return (
-      <div style={{ padding: 40 }}>
-        <h1>COGFUN ADHD Tools</h1>
-        <button onClick={() => signInWithPopup(auth, googleProvider)}>
-          Sign in with Google
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: 40 }}>
-      <h2>Welcome {user.displayName}</h2>
-      <p>{user.email}</p>
-      <button onClick={() => signOut(auth)}>Logout</button>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+
+      <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
+      <Route path="/aaa" element={<RequireAuth><AAAPage /></RequireAuth>} />
+      <Route path="/opea" element={<RequireAuth><OPEAPage /></RequireAuth>} />
+      <Route path="/results" element={<RequireAuth><Results /></RequireAuth>} />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

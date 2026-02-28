@@ -1,46 +1,39 @@
 import { useEffect, useState } from "react";
-import { db } from "../firebase";
-import { ref, onValue } from "firebase/database";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { useAuth } from "../AuthContext";
 
-function Results() {
-  const [aaaData, setAaaData] = useState([]);
-  const [opeaData, setOpeaData] = useState([]);
-  const [tab, setTab] = useState("aaa");
+export default function Results() {
+  const { user } = useAuth();
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
-    const u1 = onValue(ref(db,"aaa-submissions"),(s)=>{ const r=s.val(); setAaaData(r?Object.entries(r).map(([id,v])=>({id,...v})):[]); });
-    const u2 = onValue(ref(db,"opea-submissions"),(s)=>{ const r=s.val(); setOpeaData(r?Object.entries(r).map(([id,v])=>({id,...v})):[]); });
-    return ()=>{ u1(); u2(); };
-  }, []);
+    const q = query(
+      collection(db, "users", user.uid, "results"),
+      orderBy("createdAt", "desc")
+    );
 
-  const data = tab==="aaa" ? aaaData : opeaData;
+    return onSnapshot(q, (snap) => {
+      setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+  }, [user.uid]);
 
   return (
-    <div className="page">
-      <h2>Assessment Results</h2>
-      <div className="tab-bar">
-        <button className={tab==="aaa"?"active":""} onClick={()=>setTab("aaa")}>AAA ({aaaData.length})</button>
-        <button className={tab==="opea"?"active":""} onClick={()=>setTab("opea")}>OPEA ({opeaData.length})</button>
-      </div>
-      {data.length===0 ? <p>No submissions yet.</p> : (
-        <div className="results-list">
-          {data.map(entry=>(
-            <div key={entry.id} className="result-card">
-              <div className="result-header">
-                <strong>{entry.clientName}</strong>
-                <span>{entry.date}</span>
-                <span className="therapist">{entry.therapist}</span>
-              </div>
-              <div className="result-body">
-                {Object.entries(entry).filter(([k])=>!["id","clientName","date","therapist","timestamp"].includes(k)).map(([k,v])=><p key={k}><strong>{k}:</strong> {v}</p>)}
-              </div>
-              <small className="timestamp">{new Date(entry.timestamp).toLocaleString()}</small>
-            </div>
+    <div style={{ padding: 40 }}>
+      <h2>Results</h2>
+
+      {items.length === 0 ? (
+        <p>No results yet.</p>
+      ) : (
+        <ul>
+          {items.map((r) => (
+            <li key={r.id} style={{ marginBottom: 10 }}>
+              <b>{r.tool}</b>{" "}
+              — {r.createdAt?.toDate?.().toLocaleString?.() || "…"}
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
 }
-
-export default Results;
