@@ -62,6 +62,13 @@ export default function Topbar({ user, theme, onToggleTheme, onLogout, title }) 
               >
                 Daily Task Randomizer
               </NavLink>
+              <NavLink
+                to="/todaytimeline"
+                onClick={() => setDropdownOpen(false)}
+                className={({ isActive }) => isActive ? 'nav-active' : ''}
+              >
+                Today Timeline
+              </NavLink>
             </div>
           )}
         </div>

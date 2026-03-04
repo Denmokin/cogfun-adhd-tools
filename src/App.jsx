@@ -7,7 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import AAAPage from "./pages/AAAPage";
 import OPEAPage from "./pages/OPEAPage";
 import Results from "./pages/Results";
-import DailyRandomizer from "./pages/DailyRandomizer";
+import DailyRandomizer from "./pages/DailyRandomizer"
+import TodayTimeline from "./pages/TodayTimeline";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/opea" element={<OPEAPage />} />
         <Route path="/daily" element={<DailyRandomizer />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/todaytimeline" element={<TodayTimeline />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

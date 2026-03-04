@@ -1,0 +1,391 @@
+/* ── Page Wrapper ── */
+.today-timeline-page {
+  background: var(--bg);
+  min-height: 100vh;
+  font-family: sans-serif;
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 16px;
+  box-sizing: border-box;
+  direction: ltr;
+}
+
+
+/* ── Container ── */
+.timeline-container {
+  width: 100%;
+  max-width: 420px;
+  height: 90vh;
+  max-height: 760px;
+  min-height: 500px;
+  border-radius: 15px;
+  background: var(--surface);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  box-shadow: var(--shadow);
+  direction: ltr;
+}
+
+/* ── Header ── */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.header-date,
+.header-time {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-day,
+.header-year {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.header-month-day {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.header-hour-minute {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text);
+  text-align: right;
+}
+
+.refresh-button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.refresh-button:hover:not(:disabled) { background-color: var(--border); }
+.refresh-button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* ── Now Bar ── */
+.now-bar {
+  width: 100%;
+  height: 68px;
+  border-radius: 12px;
+  border-style: solid;
+  border-width: 1.5px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.now-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 16px;
+  border: 1.5px solid;
+  color: transparent;
+  z-index: -1;
+  animation: glow-animation 2.1s infinite alternate;
+}
+
+@keyframes glow-animation {
+  from { opacity: 0.3; }
+  to   { opacity: 0.55; }
+}
+
+.now-bar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 14px;
+  gap: 8px;
+}
+
+.now-playing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.now-playing-label {
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1.7px;
+}
+
+.now-playing-title {
+  font-size: 15px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.countdown-box {
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+/* ── Color Picker ── */
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 44px;
+  background-color: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--border-2);
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.color-picker-label {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--text);
+  opacity: 0.6;
+  letter-spacing: 1.2px;
+  flex-shrink: 0;
+}
+
+.color-options {
+  display: flex;
+  gap: 6px;
+  flex-grow: 1;
+  flex-wrap: wrap;
+}
+
+.color-option {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 0px solid transparent;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: border-width 0.15s ease-out;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}
+
+.color-option.selected { border-width: 2px; border-color: var(--text); }
+
+.color-option-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--text);
+  pointer-events: none;
+}
+
+.escape-hint {
+  font-size: 10px;
+  color: var(--text);
+  opacity: 0.35;
+  flex-shrink: 0;
+}
+
+/* ── Timeline Scroll ── */
+.timeline-flickable {
+  width: 100%;
+  flex-grow: 1;
+  overflow-y: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.timeline-flickable::-webkit-scrollbar { display: none; }
+
+.timeline-content {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Hour Markers ── */
+.hour-marker {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+.hour-label {
+  position: absolute;
+  right: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text);
+  opacity: 0.65;
+  transform: translateY(-50%);
+}
+
+.hour-divider {
+  position: absolute;
+  left: 0;
+  right: 48px;
+  height: 1px;
+  background-color: var(--text);
+  opacity: 0.15;
+  top: 50%;
+}
+
+.half-hour-divider {
+  position: absolute;
+  left: 20px;
+  right: 48px;
+  height: 1px;
+  background-color: var(--text);
+  opacity: 0.06;
+  top: 50%;
+}
+
+/* ── Event Blocks ── */
+.event-block {
+  position: absolute;
+  left: 6px;
+  width: calc(100% - 58px);
+  border-radius: 10px;
+  border-style: solid;
+  border-width: 1.5px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 2px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: opacity 0.15s ease-out, border-width 0.15s ease-out;
+  z-index: 1;
+}
+
+.event-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  border: 1.5px solid;
+  color: transparent;
+  z-index: -1;
+  animation: glow-animation 2.1s infinite alternate;
+}
+
+.event-title {
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.event-time {
+  font-size: 10px;
+  color: var(--text);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Now Line ── */
+.now-line-container {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.now-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #e74c3c;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.now-line {
+  position: absolute;
+  left: 7px;
+  right: 48px;
+  height: 2px;
+  background-color: #e74c3c;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: now-line-pulse 1.5s infinite alternate;
+}
+
+@keyframes now-line-pulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+
+/* ── Mobile: full screen ── */
+@media (max-width: 480px) {
+  .today-timeline-page {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .timeline-container {
+    max-width: 100%;
+    height: 100svh;
+    max-height: none;
+    border-radius: 0;
+    padding: 12px;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .header-month-day  { font-size: 18px; }
+  .header-hour-minute { font-size: 24px; }
+  .now-playing-title  { font-size: 14px; }
+  .countdown-box      { font-size: 14px; }
+}
+
+/* ── Tablet: centered card ── */
+@media (min-width: 481px) and (max-width: 768px) {
+  .timeline-container {
+    max-width: 400px;
+    height: 85vh;
+  }
+}

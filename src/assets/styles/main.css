@@ -12,3 +12,6 @@
 @import "./comp-styles/05-topbar.css";
 @import "./comp-styles/06-forms.css";
 @import "./comp-styles/07-cards-buttons.css";
+
+/* Components*/
+@import "./comp-styles/today-timeline.css";
